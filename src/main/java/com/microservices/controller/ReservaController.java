@@ -62,6 +62,33 @@ public class ReservaController extends HttpServlet {
     }
 
     @Override
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+        setCorsHeaders(resp);
+        resp.setContentType("application/json");
+
+        try {
+            String pathInfo = req.getPathInfo();
+
+            if (pathInfo == null || pathInfo.equals("/")) {
+                handleGetAll(req, resp);
+            } else {
+                String id = pathInfo.substring(1);
+                ReservaDTO reserva = service.findById(id);
+
+                if (reserva != null) {
+                    mapper.writeValue(resp.getWriter(), reserva);
+                } else {
+                    resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
+                    resp.getWriter().write("{\"error\":\"Reserva no encontrada\"}");
+                }
+            }
+        } catch (Exception e) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            resp.getWriter().write("{\"error\":\"" + e.getMessage() + "\"}");
+        }
+    }
+    
+    @Override
     protected void doPut(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         setCorsHeaders(resp);
         String pathInfo = req.getPathInfo();
